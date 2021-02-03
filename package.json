@@ -1,0 +1,11 @@
+{
+  "name": "tt-pomodoro",
+  "version": "0.0.0",
+  "private": true,
+  "devDependencies": {
+    "serve": "^11.3.2"
+  },
+  "scripts": {
+    "dev": "serve ."
+  }
+}

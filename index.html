@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="utf-8" />
+  <title>ポモドーロテクニックの紹介</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!--
+    (# ﾟДﾟ) JavaScriptなぞ使ってんじゃねぇ！
+  -->
+
+  <!--
+    SilkScreen Font by by Jason Kottke (https://kottke.org/plus/type/silkscreen/index.html)
+    @license
+    Open Font License (http://scripts.sil.org/OFL)
+  -->
+  <!--
+    JFドットM+12 フォント by 森下浩司 (http://mplus-fonts.osdn.jp/mplus-bitmap-fonts/)
+    @license 
+    These fonts are free software.
+    Unlimited permission is granted to use, copy, and distribute it, with or without modification, either commercially and noncommercially.
+    THESE FONTS ARE PROVIDED "AS IS" WITHOUT WARRANTY. 
+  -->
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="preload" as="font" href="fonts/jfdotmplus12.woff" />
+  <link rel="preload" as="font" href="fonts/silkscreen.woff" />
+  <style>
+    @font-face {
+      font-family: "SilkScreen";
+      font-style: normal;
+      font-weight: normal;
+      src: local("SilkScreen"), url("fonts/silkscreen.woff") format("woff");
+    }
+
+    @font-face {
+      font-family: "JF Dot MPlus 12";
+      font-style: normal;
+      font-weight: normal;
+      font-stretch: ultra-condensed;
+      src: url("fonts/jfdotmplus12.woff") format("woff");
+    }
+
+    *,
+    ::before,
+    ::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 62.5%;
+    }
+
+    body {
+      font-family: "SilkScreen", "JF Dot MPlus 12", sans-serif;
+      font-size: 1.6rem;
+      background-color: darkslategray;
+      color: white;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    /* Buttons */
+    .button {
+      font-size: 2rem;
+    }
+
+    .button::before {
+      content: "▶︎";
+      margin-right: 0.5em;
+      opacity: 0;
+    }
+
+    .button:hover::before {
+      opacity: 1;
+    }
+
+    :target~main #start_button {
+      display: none;
+    }
+
+    /* Containers */
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+
+      transform: translate(-50%, -50%);
+    }
+
+    .conversation-area {
+      position: relative;
+      border: solid currentColor 2px;
+      padding: 0.5em 1em;
+      margin-block-end: 1em;
+      min-height: 9em;
+      width: calc(480px + 2em);
+      max-width: calc(100vw - 2em);
+      line-height: 1.6;
+      word-break: keep-all;
+    }
+
+    .conversation-area a:not(.conversation-link):not(.button) {
+      position: relative;
+
+      color: tomato;
+      z-index: 5;
+    }
+
+    .conversation-area a:not(.conversation-link):not(.button):hover {
+      text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+
+    .conversation-link {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+
+      z-index: 1;
+    }
+
+    /* Sprites */
+    .sprite {
+      --aspect-ratio: calc(32/48);
+      width: 120px;
+      max-width: 80vw;
+      image-rendering: crisp-edges;
+      image-rendering: pixelated;
+      background-position: 0 0;
+      background-size: cover;
+    }
+
+    .sprite-spacer {
+      display: block;
+      padding-top: calc(100% / var(--aspect-ratio));
+    }
+
+    @keyframes tomato-anim {
+      from {
+        background-position-x: -600%;
+      }
+
+      to {
+        background-position-x: -900%;
+      }
+    }
+    .tomato-sprite {
+      background-image: url("spritesheets/tomato.png");
+
+      --intro-duration: 0.5s;
+      transition: background-position-x 0.5s steps(6);
+    }
+
+    #intro4:target~main .tomato-sprite,
+    #intro5:target~main .tomato-sprite {
+      animation: 0.5s steps(3) var(--intro-duration) infinite alternate none tomato-anim;
+      background-position-x: -600%;
+    }
+
+    @keyframes man-working-anim {
+      0%,
+      50%,
+      100% {
+        background-position-x: 0;
+      }
+
+      30% {
+        background-position-x: -100%;
+      }
+
+      60% {
+        background-position-x: -200%;
+      }
+    }
+    .man-sprite {
+      background-image: url("spritesheets/man-working.png");
+
+      animation: 3s steps(2, jump-none) infinite both normal man-working-anim;
+    }
+    .man-sprite.fast {
+      animation-duration: 0.3s;
+    }
+
+    @keyframes man-sweeting-anim {
+      from {
+        background-position-x: 0;
+      }
+
+      to {
+        background-position-x: -400%;
+      }
+    }
+
+    .man-sweeting-sprite {
+      background-image: url("spritesheets/man-sweeting.png");
+
+      animation: 1.5s steps(5, jump-none) infinite both man-sweeting-anim;
+    }
+
+    @keyframes man-boring-anim {
+      from {
+        background-position-x: 0;
+      }
+
+      to {
+        background-position-x: -600%;
+      }
+    }
+
+    .man-boring-sprite {
+      background-image: url("spritesheets/man-boring.png");
+
+      animation: 1.5s steps(7, jump-none) infinite both man-boring-anim;
+    }
+
+    @keyframes man-pomodoro-anim {
+      from {
+        background-position-x: 0;
+      }
+
+      to {
+        background-position-x: -1400%;
+      }
+    }
+
+    .man-pomodoro-sprite {
+      background-image: url("spritesheets/man-pomodoro.png");
+
+      animation: 5s steps(14) infinite both man-pomodoro-anim;
+    }
+
+    @keyframes toggl-anim {
+      from {
+        background-position-x: 0;
+      }
+
+      to {
+        background-position-x: -800%;
+      }
+    }
+    .toggl-sprite {
+      background-image: url("spritesheets/toggl.png");
+
+      animation: 1s steps(9, jump-none) both toggl-anim;
+    }
+
+    /* Chapter visibility */
+    [data-only] {
+      display: none;
+    }
+
+    #intro1:target~main [data-only~="intro1"],
+    #intro2:target~main [data-only~="intro2"],
+    #intro3:target~main [data-only~="intro3"],
+    #intro4:target~main [data-only~="intro4"],
+    #intro5:target~main [data-only~="intro5"],
+    #why1:target~main [data-only~="why1"],
+    #why2:target~main [data-only~="why2"],
+    #why3:target~main [data-only~="why3"],
+    #why4:target~main [data-only~="why4"],
+    #how1:target~main [data-only~="how1"],
+    #how2:target~main [data-only~="how2"],
+    #how3:target~main [data-only~="how3"],
+    #how4:target~main [data-only~="how4"],
+    #how5:target~main [data-only~="how5"],
+    #conclusion:target~main [data-only~="conclusion"] {
+      display: block;
+    }
+
+    /* Utilities */
+    .hash-anchor {
+      display: none;
+    }
+
+    @keyframes blink {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .paragraph::after {
+      content: "▼";
+      font-size: 0.7em;
+      vertical-align: bottom;
+      animation: 1.5s steps(2, jump-none) infinite both blink;
+    }
+
+    footer {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      padding: 0.5em 1em;
+    }
+
+    /*
+     * I can use "preload" link in head, but it's intended for immediate preloading.
+     * This "hidden" image caches images so there is no flickering on image switching.
+     */
+    .preload {
+      position: fixed;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body>
+  <img src="spritesheets/man-boring.png" class="preload" aria-hidden="true" />
+  <img src="spritesheets/man-sweeting.png" class="preload" aria-hidden="true" />
+  <img src="spritesheets/man-working.png" class="preload" aria-hidden="true" />
+  <img src="spritesheets/man-pomodoro.png" class="preload" aria-hidden="true" />
+  <img src="spritesheets/tomato.png" class="preload" />
+  <img src="spritesheets/toggl.png" class="preload" />
+  <div id="intro1" class="hash-anchor"></div>
+  <div id="intro2" class="hash-anchor"></div>
+  <div id="intro3" class="hash-anchor"></div>
+  <div id="intro4" class="hash-anchor"></div>
+  <div id="intro5" class="hash-anchor"></div>
+  <div id="why1" class="hash-anchor"></div>
+  <div id="why2" class="hash-anchor"></div>
+  <div id="why3" class="hash-anchor"></div>
+  <div id="why4" class="hash-anchor"></div>
+  <div id="how1" class="hash-anchor"></div>
+  <div id="how2" class="hash-anchor"></div>
+  <div id="how3" class="hash-anchor"></div>
+  <div id="how4" class="hash-anchor"></div>
+  <div id="how5" class="hash-anchor"></div>
+  <div id="conclusion" class="hash-anchor"></div>
+  <main>
+    <div class="conversation-area">
+      <a href="#intro1" id="start_button" class="button">はじめる</a>
+      <p class="paragraph" data-only="intro1">
+        みなさん こうりつよく おしごと してますか？
+        <a href="#intro2" class="conversation-link" aria-label="次のテキスト"></a>
+      </p>
+      <p class="paragraph" data-only="intro2">
+        きょうは クオリティ の たかい おしごとを するための テクニック を しょうかい させてください
+        <a href="#intro3" class="conversation-link" aria-label="次のテキスト">
+        </a>
+      </p>
+      <p class="paragraph" data-only="intro3">
+        その な も ...
+        <a href="#intro4" class="conversation-link" aria-label="次のテキスト">
+        </a>
+      </p>
+      <p class="paragraph" data-only="intro4">
+        ポモドーロ テクニック ！
+        <a href="#intro5" class="conversation-link" aria-label="次のテキスト"></a>
+      </p>
+      <p class="paragraph" data-only="intro5">
+        「トマト タイマー」 なんて よばれる ことも あります
+        <a href="#why1" class="conversation-link" aria-label="次のテキスト"></a>
+      </p>
+      <p class="paragraph" data-only="why1">
+        ひとは さぎょう するときに たしょう なりとも しゅうちゅう します
+        <a href="#why2" class="conversation-link" aria-label="次のテキスト"></a>
+      </p>
+      <p class="paragraph" data-only="why2">
+        しかし、 にんげんが しゅうちゅう できる じかん には かぎり が あります
+        <a href="#why3" class="conversation-link" aria-label="次のテキスト"></a>
+      </p>
+      <p class="paragraph" data-only="why3">
+        また、 ひとは めいかくな くぎり が ないと さきのばし を したり ひこうりつ な じかん の つかいかた を してしまいます
+        <a href="#why4" class="conversation-link" aria-label="次のテキスト"></a>
+      </p>
+      <p class="paragraph" data-only="why4">
+        ポモドーロ テクニック は こういった もんだい を かいけつ する じかん かつようじゅつ です
+        <a href="#how1" class="conversation-link" aria-label="次のテキスト"></a>
+      </p>
+      <p class="paragraph" data-only="how1">
+        ポモドーロ では 「しゅうちゅう」 と 「きゅうけい」 を じかん を きめて くりかえします
+        <a href="#how2" class="conversation-link" aria-label="次のテキスト"></a>
+      </p>
+      <p class="paragraph" data-only="how2">
+        それぞれの じかん の ながさ は じぶんで きめます が、 しゅうちゅう 25 ふん きゅうけい 5 ふん が よく つかわれます
+        <a href="#how3" class="conversation-link" aria-label="次のテキスト"></a>
+      </p>
+      <p class="paragraph" data-only="how3">
+        また、 しゅうちゅう を 4 かい おえたら 40 ふん くらい の ながめ の きゅうけい を とります
+        <a href="#how4" class="conversation-link" aria-label="次のテキスト"></a>
+      </p>
+      <p class="paragraph" data-only="how4">
+        くわしい せつめい は <a href="https://www.dropbox.com/ja/business/resources/pomodoro-technique" target="_blank"
+          rel="noopener">Dropbox の きじ</a> が わかりやすい です
+        <a href="#how5" class="conversation-link" aria-label="次のテキスト"></a>
+      </p>
+      <p class="paragraph" data-only="how5">
+        ちなみに Toggl の ブラウザ かくちょう や デスクトップ アプリ の ポモドーロ きのう で てがる に ためせます
+        <a href="#conclusion" class="conversation-link" aria-label="次のテキスト"></a>
+      </p>
+      <p data-only="conclusion">
+        しゅうちゅうりょく が あがり、 じかん かんり も みにつく ポモドーロ。 ぜひ ためしてみて ください！ ~おわり~
+      </p>
+    </div>
+    <div class="sprite tomato-sprite" role="img" aria-label="トマトのアニメーション画像"
+      data-only="intro1 intro2 intro3 intro4 intro5">
+      <div class="sprite-spacer"></div>
+    </div>
+    <div class="sprite man-sprite" role="img" aria-label="働いている人のアニメーション画像" data-only="why1">
+      <div class="sprite-spacer"></div>
+    </div>
+    <div class="sprite man-sweeting-sprite" role="img" aria-label="集中力を欠いている人のアニメーション画像" data-only="why2">
+      <div class="sprite-spacer"></div>
+    </div>
+    <div class="sprite man-boring-sprite" role="img" aria-label="ポワポワしてる人のアニメーション画像" data-only="why3 why4">
+      <div class="sprite-spacer"></div>
+    </div>
+    <div class="sprite man-pomodoro-sprite" role="img" aria-label="ポモドーロしてる人のアニメーション画像" data-only="how1 how2 how3 how4">
+      <div class="sprite-spacer"></div>
+    </div>
+    <div class="sprite toggl-sprite" role="img" aria-label="Togglロゴ" data-only="how5">
+      <div class="sprite-spacer"></div>
+    </div>
+    <div class="sprite man-sprite fast" role="img" aria-label="効率よく働いている人のアニメーション画像" data-only="conclusion">
+      <div class="sprite-spacer"></div>
+    </div>
+  </main>
+  <footer>
+    <small>COPYRIGHT 2021 Shota Fuji (pocka)</small>
+  </footer>
+</body>
+
+</html>
